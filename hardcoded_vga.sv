@@ -89,33 +89,33 @@ module hardcoded_vga(
 	
 	// Update beat notes and positions during vsync
 	always @(posedge vsync) begin
-		if (beat_pos1 >= 639) begin
+		if (beat_pos1 >= 639 + NOTELENGTH) begin
 			beat_pos1 <= 0;
-			//beat_notes1 <= ~beat_notes1;
+			beat_notes1 <= ~beat_notes1;
 		end
 		else begin
 			beat_pos1 <= beat_pos1 + PIXELSPEED;
 		end
 		
-		if (beat_pos2 >= 639) begin
+		if (beat_pos2 >= 639 + NOTELENGTH) begin
 			beat_pos2 <= 0;
-			//beat_notes2 <= ~beat_notes2;
+			beat_notes2 <= ~beat_notes2;
 		end
 		else begin
 			beat_pos2 <= beat_pos2 + PIXELSPEED;
 		end
 		
-		if (beat_pos3 >= 639) begin
+		if (beat_pos3 >= 639 + NOTELENGTH) begin
 			beat_pos3 <= 0;
-			//beat_notes3 <= ~beat_notes3;
+			beat_notes3 <= ~beat_notes3;
 		end
 		else begin
 			beat_pos3 <= beat_pos3 + PIXELSPEED;
 		end
 		
-		if (beat_pos4 >= 639) begin
+		if (beat_pos4 >= 639 + NOTELENGTH) begin
 			beat_pos4 <= 0;
-			//beat_notes4 <= ~beat_notes4;
+			beat_notes4 <= ~beat_notes4;
 		end
 		else begin
 			beat_pos4 <= beat_pos4 + PIXELSPEED;
@@ -188,23 +188,23 @@ module hardcoded_vga(
 				|| (hc <= beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH))
 				|| (hc <= beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH))) begin
 				
-				if (beat_notes1[0]) begin	
-					red <= 4'b0000;
-					green <= 4'b0000;
+				if (vc / 120 == 0 && beat_notes1[0]) begin	
+					red <= 4'b1111;
+					green <= 4'b1111;
 					blue <= 4'b0000;
 				end
-				else if (beat_notes2[0]) begin	
+				else if (vc / 120 == 1 && beat_notes2[0]) begin	
 					red <= 4'b0000;
 					green <= 4'b0000;
+					blue <= 4'b1111;
+				end
+				else if (vc / 120 == 2 && beat_notes3[0]) begin	
+					red <= 4'b0000;
+					green <= 4'b1111;
 					blue <= 4'b0000;
 				end
-				else if (beat_notes3[0]) begin	
-					red <= 4'b0000;
-					green <= 4'b0000;
-					blue <= 4'b0000;
-				end
-				else if (beat_notes4[0]) begin	
-					red <= 4'b0000;
+				else if (vc / 120 == 3 && beat_notes4[0]) begin	
+					red <= 4'b1111;
 					green <= 4'b0000;
 					blue <= 4'b0000;
 				end
@@ -214,28 +214,13 @@ module hardcoded_vga(
 					blue <= 4'b1111;
 				end
 			end
-		/*	
-			if (hc <= beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH))
-				if (beat_notes2[0]) begin	
-					red <= 4'b0000;
-					green <= 4'b0000;
-					blue <= 4'b0000;
-				end
-				else begin
-					red <= 4'b1111;
-					green <= 4'b1111;
-					blue <= 4'b1111;
-				end
-			end
-			
-
 			
 			else begin
 				red <= 4'b1111;
 				green <= 4'b1111;
 				blue <= 4'b1111;
 			end
-		*/	
+			
 		
 		end
 		else begin
