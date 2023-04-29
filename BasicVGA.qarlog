@@ -1,0 +1,26 @@
+Quartus Prime Archive log --	C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/BasicVGA.qarlog
+
+Archive:	C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/BasicVGA.qar
+Date:		Thu Apr 27 01:08:28 2023
+Quartus Prime		21.1.0 Build 842 10/21/2021 SJ Lite Edition
+
+	=========== Files Selected: ===========
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/Lab3.qsf
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/Lab6.qpf
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/assignment_defaults.qdf
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/pll.ppf
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/pll.qip
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/pll.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/pll_bb.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/pll_inst.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/pll_syn.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/ram.qip
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/ram.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/ram_bb.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/ram_inst.v
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/vga.sv
+C:/Users/Nathan Nguyendinh/Documents/Quartus_Projects/DAV/Lab6/vga_test.sv
+	======= Total: 15 files to archive =======
+
+	================ Status: ===============
+All files archived successfully.

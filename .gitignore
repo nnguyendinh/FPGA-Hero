@@ -1,0 +1,16 @@
+
+*.qdf
+*.qpf
+*.qip
+*.qsf
+*.ppf
+*.rpt
+db/*
+output_files/*
+simulation/*
+incremental_db/*
+greybox_tmp/*
+*.bak
+*.log
+*.out
+*.err

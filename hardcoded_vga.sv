@@ -26,6 +26,11 @@ module hardcoded_vga(
 		↓
 	wrap up to top
 	*/
+	
+	// ROM regs to read notes file
+	reg [7:0] ROM_address = 0;
+	reg [3:0] note_line;
+	notes_ROM note_reader(ROM_address, vgaclk, note_line);
 		
 	// Regs to hold the position of beat 1 - 4
 	reg [9:0] beat_pos1 = 0;
@@ -34,12 +39,12 @@ module hardcoded_vga(
 	reg [9:0] beat_pos4 = 480;
 	
 	// Regs to hold whether there is a note at that beat or not
-	reg [3:0] beat_notes1 = 4'b0000;
+	reg [3:0] beat_notes1 = 4'b1111;
 	reg [3:0] beat_notes2 = 4'b1111;
-	reg [3:0] beat_notes3 = 4'b0000;
+	reg [3:0] beat_notes3 = 4'b1111;
 	reg [3:0] beat_notes4 = 4'b1111;
 	
-	localparam PIXELSPEED = 3;
+	localparam PIXELSPEED = 5;
 	localparam NOTELENGTH = 150;
 	
 	//	Video protocol constants
@@ -89,36 +94,58 @@ module hardcoded_vga(
 	
 	// Update beat notes and positions during vsync
 	always @(posedge vsync) begin
-		if (beat_pos1 >= 639 + NOTELENGTH) begin
+	
+		if (rst == 1) begin
 			beat_pos1 <= 0;
-			beat_notes1 <= ~beat_notes1;
-		end
-		else begin
-			beat_pos1 <= beat_pos1 + PIXELSPEED;
-		end
-		
-		if (beat_pos2 >= 639 + NOTELENGTH) begin
-			beat_pos2 <= 0;
-			beat_notes2 <= ~beat_notes2;
-		end
-		else begin
-			beat_pos2 <= beat_pos2 + PIXELSPEED;
+			beat_pos2 <= 160;
+			beat_pos3 <= 320;
+			beat_pos4 <= 480;
+			
+			beat_notes1 <= 4'b1111;
+			beat_notes2 <= 4'b1111;
+			beat_notes3 <= 4'b1111;
+			beat_notes4 <= 4'b1111;
+			
+			ROM_address <= 0;
 		end
 		
-		if (beat_pos3 >= 639 + NOTELENGTH) begin
-			beat_pos3 <= 0;
-			beat_notes3 <= ~beat_notes3;
-		end
 		else begin
-			beat_pos3 <= beat_pos3 + PIXELSPEED;
-		end
 		
-		if (beat_pos4 >= 639 + NOTELENGTH) begin
-			beat_pos4 <= 0;
-			beat_notes4 <= ~beat_notes4;
-		end
-		else begin
-			beat_pos4 <= beat_pos4 + PIXELSPEED;
+			if (beat_pos1 >= 639 + NOTELENGTH) begin
+				beat_pos1 <= 0;
+				beat_notes1 <= note_line;
+				ROM_address <= ROM_address + 1'b1;
+			end
+			else begin
+				beat_pos1 <= beat_pos1 + PIXELSPEED;
+			end
+			
+			if (beat_pos2 >= 639 + NOTELENGTH) begin
+				beat_pos2 <= 0;
+				beat_notes2 <= note_line;
+				ROM_address <= ROM_address + 1'b1;
+			end
+			else begin
+				beat_pos2 <= beat_pos2 + PIXELSPEED;
+			end
+			
+			if (beat_pos3 >= 639 + NOTELENGTH) begin
+				beat_pos3 <= 0;
+				beat_notes3 <= note_line;
+				ROM_address <= ROM_address + 1'b1;
+			end
+			else begin
+				beat_pos3 <= beat_pos3 + PIXELSPEED;
+			end
+			
+			if (beat_pos4 >= 639 + NOTELENGTH) begin
+				beat_pos4 <= 0;
+				beat_notes4 <= note_line;
+				ROM_address <= ROM_address + 1'b1;
+			end
+			else begin
+				beat_pos4 <= beat_pos4 + PIXELSPEED;
+			end
 		end
 	end
 
@@ -126,50 +153,31 @@ module hardcoded_vga(
 	always_comb begin
 		// check if we're within vertical active video range
 		if (hc <= HPIXELS && vc <= VLINES) begin
-		/*
-			red <= hc / 40;
-			green <= ((hc / 40) + (vc / 30))/2;
-			blue <= vc / 30;
-		*/
-		// Step 1: Get beat line moving
-		/*
-			if (hc == beat_pos1) begin
-				red <= 4'b0000;
-				green <= 4'b0000;
-				blue <= 4'b0000;
-			end
-			
-			else if (hc == beat_pos2) begin
+
+			if (hc <= beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
+					&& beat_notes1[vc / 120]) begin
 				red <= 4'b1111;
-				green <= 4'b0000;
+				green <= 4'b1111;
 				blue <= 4'b0000;
 			end
 			
-			else if (hc == beat_pos3) begin
+			else if (hc <= beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH)
+						&& beat_notes2[vc / 120]) begin
 				red <= 4'b0000;
 				green <= 4'b1111;
 				blue <= 4'b0000;
 			end
 			
-			else if (hc == beat_pos4) begin
+			else if (hc <= beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH)
+						&& beat_notes3[vc / 120]) begin
 				red <= 4'b0000;
 				green <= 4'b0000;
 				blue <= 4'b1111;
 			end
 			
-			else begin
+			else if (hc <= beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH)
+						&& beat_notes4[vc / 120]) begin
 				red <= 4'b1111;
-				green <= 4'b1111;
-				blue <= 4'b1111;
-			end
-		*/
-		//	Step 2: Get blocks moving
-		/*
-			if (	(hc <= beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH))
-				|| (hc <= beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH))
-				|| (hc <= beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH))
-				|| (hc <= beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH))) begin
-				red <= 4'b0000;
 				green <= 4'b0000;
 				blue <= 4'b0000;
 			end
@@ -179,48 +187,6 @@ module hardcoded_vga(
 				green <= 4'b1111;
 				blue <= 4'b1111;
 			end
-		*/
-			//Step 3: Notechecking
-				
-		
-			if (	(hc <= beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH))
-				|| (hc <= beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH))
-				|| (hc <= beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH))
-				|| (hc <= beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH))) begin
-				
-				if (vc / 120 == 0 && beat_notes1[0]) begin	
-					red <= 4'b1111;
-					green <= 4'b1111;
-					blue <= 4'b0000;
-				end
-				else if (vc / 120 == 1 && beat_notes2[0]) begin	
-					red <= 4'b0000;
-					green <= 4'b0000;
-					blue <= 4'b1111;
-				end
-				else if (vc / 120 == 2 && beat_notes3[0]) begin	
-					red <= 4'b0000;
-					green <= 4'b1111;
-					blue <= 4'b0000;
-				end
-				else if (vc / 120 == 3 && beat_notes4[0]) begin	
-					red <= 4'b1111;
-					green <= 4'b0000;
-					blue <= 4'b0000;
-				end
-				else begin
-					red <= 4'b1111;
-					green <= 4'b1111;
-					blue <= 4'b1111;
-				end
-			end
-			
-			else begin
-				red <= 4'b1111;
-				green <= 4'b1111;
-				blue <= 4'b1111;
-			end
-			
 		
 		end
 		else begin
