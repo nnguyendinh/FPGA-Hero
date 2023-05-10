@@ -6,8 +6,9 @@ module hardcoded_vga(
 		output reg [3:0] red,	//red vga output
 		output reg [3:0] green, //green vga output
 		output reg [3:0] blue,	//blue vga output
-		output reg blank			//output to tell when blanking for RAM purposes
+		output reg [19:0] score			//output to tell when blanking for RAM purposes
    );
+	
 	/*
 	
 			Col1 Col2 Col3 Col4
@@ -62,7 +63,27 @@ module hardcoded_vga(
 	// registers for storing the horizontal & vertical counters
 	reg [9:0] hc;
 	reg [9:0] vc;
+	
+	//score = 0;
+	
+	reg color_mode;
+	reg color;
+	
+	parameter BW = 0;
+	parameter COLORED = 1;
 
+	parameter BLACK = 0;
+	parameter WHITE = 1;
+	parameter GRAY = 2;
+	
+	parameter GREEN = 0;
+	parameter RED = 1;
+	parameter YELLOW = 2;
+	parameter BLUE = 3;
+	parameter ORANGE = 4;
+	
+	
+	color_picker picker_of_colors(color_mode,	color, red,	green, blue);
 
     //Counter block: change hc and vc correspondingly to the current state.
 	always @(posedge vgaclk) begin
@@ -107,9 +128,12 @@ module hardcoded_vga(
 			beat_notes4 <= 4'b1111;
 			
 			ROM_address <= 0;
+			
+			score <= 0;
 		end
 		
 		else begin
+			score <= score + 1;
 		
 			if (beat_pos1 >= 639 + NOTELENGTH) begin
 				beat_pos1 <= 0;
@@ -154,45 +178,65 @@ module hardcoded_vga(
 		// check if we're within vertical active video range
 		if (hc <= HPIXELS && vc <= VLINES) begin
 
-			if (hc <= beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
+			if (hc < beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
 					&& beat_notes1[vc / 120]) begin
-				red <= 4'b1111;
-				green <= 4'b1111;
-				blue <= 4'b0000;
+				//red <= 4'b1111;
+				//green <= 4'b1111;
+				//blue <= 4'b0000;
+				color_mode <= COLORED;
+				color <= vc / 120;
 			end
 			
-			else if (hc <= beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH)
+			else if (hc < beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH)
 						&& beat_notes2[vc / 120]) begin
-				red <= 4'b0000;
-				green <= 4'b1111;
-				blue <= 4'b0000;
+				//red <= 4'b0000;
+				//green <= 4'b1111;
+				//blue <= 4'b0000;
+				color_mode <= COLORED;
+				color <= vc / 120;
 			end
 			
-			else if (hc <= beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH)
+			else if (hc < beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH)
 						&& beat_notes3[vc / 120]) begin
-				red <= 4'b0000;
-				green <= 4'b0000;
-				blue <= 4'b1111;
+				//red <= 4'b0000;
+				//green <= 4'b0000;
+				//blue <= 4'b1111;
+				color_mode <= COLORED;
+				color <= vc / 120;
 			end
 			
-			else if (hc <= beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH)
+			else if (hc < beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH)
 						&& beat_notes4[vc / 120]) begin
-				red <= 4'b1111;
-				green <= 4'b0000;
-				blue <= 4'b0000;
+				//red <= 4'b1111;
+				//green <= 4'b0000;
+				//blue <= 4'b0000;
+				color_mode <= COLORED;
+				color <= vc / 120;
+			end
+			
+			else if (hc == beat_pos1 || hc == beat_pos2 || hc == beat_pos3 || hc == beat_pos4) begin
+				//red <= 4'b1000;
+				//green <= 4'b1000;
+				//blue <= 4'b1000;
+				color_mode <= BW;
+				color <= GRAY;
 			end
 			
 			else begin
-				red <= 4'b1111;
-				green <= 4'b1111;
-				blue <= 4'b1111;
+				//red <= 4'b1111;
+				//green <= 4'b1111;
+				//blue <= 4'b1111;
+				color_mode <= BW;
+				color <= WHITE;
 			end
 		
 		end
 		else begin
-			red <= 4'b0000;
-			green <= 4'b0000;
-			blue <= 4'b0000;
+			//red <= 4'b0000;
+			//green <= 4'b0000;
+			//blue <= 4'b0000;
+			color_mode <= BW;
+			color <= BLACK;
 		end
 	end
 
