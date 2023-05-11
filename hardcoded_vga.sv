@@ -45,11 +45,11 @@ module hardcoded_vga(
 	reg [3:0] beat_notes3 = 4'b1111;
 	reg [3:0] beat_notes4 = 4'b1111;
 	
+	// Pixel speed and note length constants
 	localparam PIXELSPEED = 5;
 	localparam NOTELENGTH = 150;
 	
 	//	Video protocol constants
-    // You can find these described in the VGA specification for 640x480
 	localparam HPIXELS = 640;  // horizontal pixels per line
 	localparam HPULSE = 96; 	// hsync pulse length
 	localparam HBP = 48; 	    // end of horizontal back porch
@@ -64,8 +64,10 @@ module hardcoded_vga(
 	reg [9:0] hc;
 	reg [9:0] vc;
 	
-	//score = 0;
+	// Score for seven seg display
+	score = 0;
 	
+	// Color picker definitions
 	reg color_mode;
 	reg [2:0] color;
 	
@@ -82,7 +84,6 @@ module hardcoded_vga(
 	parameter YELLOW = 3'b010;
 	parameter BLUE = 3'b011;
 	parameter ORANGE = 3'b100;
-	
 	
 	color_picker picker_of_colors(color_mode,	color, red,	green, blue);
 
@@ -134,13 +135,18 @@ module hardcoded_vga(
 		end
 		
 		else begin
+			// Increment the score once every frame
 			score <= score + 1;
 		
+			// Once a beat goes off the right boundary, 
+			// reset it and read new line from ROM
 			if (beat_pos1 >= 639 + NOTELENGTH) begin
 				beat_pos1 <= 0;
 				beat_notes1 <= note_line;
 				ROM_address <= ROM_address + 1'b1;
 			end
+			
+			// If still within boundary, update beat position
 			else begin
 				beat_pos1 <= beat_pos1 + PIXELSPEED;
 			end
@@ -179,46 +185,48 @@ module hardcoded_vga(
 		// check if we're within vertical active video range
 		if (hc <= HPIXELS && vc <= VLINES) begin
 		
+			// If on the note active line, display white
 			if (hc >= 480 && hc < 485) begin
 				color_mode <= BW;
 				color <= WHITE;
 			end
 
+			// If on beats 1-4, display appropriate color based on which column note is in
 			else if (hc < beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
 					&& beat_notes1[vc / 120]) begin
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
-			
 			else if (hc < beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH)
 						&& beat_notes2[vc / 120]) begin
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
-			
 			else if (hc < beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH)
 						&& beat_notes3[vc / 120]) begin
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
-			
 			else if (hc < beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH)
 						&& beat_notes4[vc / 120]) begin
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
 			
+			// If directly on a beat line, display gray
 			else if (hc == beat_pos1 || hc == beat_pos2 || hc == beat_pos3 || hc == beat_pos4) begin
 				color_mode <= BW;
 				color <= GRAY;
 			end
 			
+			// Display brown as the background
 			else begin
 				color_mode <= BW;
 				color <= BROWN;
 			end
 		
 		end
+		// If not in active vga video range, display black
 		else begin
 			color_mode <= BW;
 			color <= BLACK;
