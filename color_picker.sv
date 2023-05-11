@@ -6,12 +6,12 @@ module color_picker(
 		output reg [3:0] blue	//blue vga output
    );
 	
-	parameter BW = 0;
-	parameter COLORED = 1;
+	parameter BW = 1'b0;
+	parameter COLORED = 1'b1;
 
-	parameter BLACK = 0;
-	parameter WHITE = 1;
-	parameter GRAY = 2;
+	parameter BLACK = 3'b000;
+	parameter WHITE = 3'b001;
+	parameter GRAY = 3'b010;
 	
 	parameter GREEN = 0;
 	parameter RED = 1;
@@ -20,14 +20,14 @@ module color_picker(
 	parameter ORANGE = 4;
 	
 	always_comb begin
-		
+	
 		if (color_mode == BW) begin
 			if (color == BLACK) begin
 				red <= 4'b0000;
 				green <= 4'b0000;
 				blue <= 4'b0000;
 			end
-			if (color == GRAY) begin
+			else if (color == GRAY) begin
 				red <= 4'b1000;
 				green <= 4'b1000;
 				blue <= 4'b1000;
@@ -38,6 +38,7 @@ module color_picker(
 				blue <= 4'b1111;	
 			end
 		end
+		
 		// Colored Mode
 		else begin
 			if (color == GREEN) begin
@@ -45,17 +46,17 @@ module color_picker(
 				green <= 4'b1111;
 				blue <= 4'b0000;
 			end
-			if (color == RED) begin
+			else if (color == RED) begin
 				red <= 4'b1111;
 				green <= 4'b0000;
 				blue <= 4'b0000;
 			end
-			if (color == YELLOW) begin
+			else if (color == YELLOW) begin
 				red <= 4'b1111;
 				green <= 4'b1111;
 				blue <= 4'b0000;
 			end
-			if (color == BLUE) begin
+			else if (color == BLUE) begin
 				red <= 4'b0000;
 				green <= 4'b0000;
 				blue <= 4'b1111;
@@ -66,5 +67,6 @@ module color_picker(
 				blue <= 4'b0000;	
 			end
 		end
+
 	end
 endmodule
