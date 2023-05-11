@@ -15,7 +15,7 @@ module vga_test(switches, reset, clock, hsync, vsync, red, green, blue, leds, di
 	output [7:0] dig4;
 	output [7:0] dig5;
 	
-	reg [19:0] score;
+	reg [19:0] score_ = 154;
 	
 	reg vgaClock;
 
@@ -23,7 +23,7 @@ module vga_test(switches, reset, clock, hsync, vsync, red, green, blue, leds, di
 	
 	hardcoded_vga UUT(vgaClock, reset, hsync, vsync, red, green, blue, score);
 	
-	sevenSegDisp scoreboard(score, dig5, dig4, dig3, dig2, dig1, dig0);
+	sevenSegDisp scoreboard(score_, dig5, dig4, dig3, dig2, dig1, dig0);
 	
 	
 	

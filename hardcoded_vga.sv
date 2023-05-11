@@ -67,20 +67,21 @@ module hardcoded_vga(
 	//score = 0;
 	
 	reg color_mode;
-	reg color;
+	reg [2:0] color;
 	
-	parameter BW = 0;
-	parameter COLORED = 1;
+	parameter BW = 1'b0;
+	parameter COLORED = 1'b1;
 
-	parameter BLACK = 0;
-	parameter WHITE = 1;
-	parameter GRAY = 2;
+	parameter BLACK = 3'b000;
+	parameter WHITE = 3'b001;
+	parameter GRAY = 3'b010;
+	parameter BROWN = 3'b011;
 	
-	parameter GREEN = 0;
-	parameter RED = 1;
-	parameter YELLOW = 2;
-	parameter BLUE = 3;
-	parameter ORANGE = 4;
+	parameter GREEN = 3'b000;
+	parameter RED = 3'b001;
+	parameter YELLOW = 3'b010;
+	parameter BLUE = 3'b011;
+	parameter ORANGE = 3'b100;
 	
 	
 	color_picker picker_of_colors(color_mode,	color, red,	green, blue);
@@ -177,64 +178,48 @@ module hardcoded_vga(
 	always_comb begin
 		// check if we're within vertical active video range
 		if (hc <= HPIXELS && vc <= VLINES) begin
+		
+			if (hc >= 480 && hc < 485) begin
+				color_mode <= BW;
+				color <= WHITE;
+			end
 
-			if (hc < beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
+			else if (hc < beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
 					&& beat_notes1[vc / 120]) begin
-				//red <= 4'b1111;
-				//green <= 4'b1111;
-				//blue <= 4'b0000;
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
 			
 			else if (hc < beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH)
 						&& beat_notes2[vc / 120]) begin
-				//red <= 4'b0000;
-				//green <= 4'b1111;
-				//blue <= 4'b0000;
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
 			
 			else if (hc < beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH)
 						&& beat_notes3[vc / 120]) begin
-				//red <= 4'b0000;
-				//green <= 4'b0000;
-				//blue <= 4'b1111;
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
 			
 			else if (hc < beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH)
 						&& beat_notes4[vc / 120]) begin
-				//red <= 4'b1111;
-				//green <= 4'b0000;
-				//blue <= 4'b0000;
 				color_mode <= COLORED;
 				color <= vc / 120;
 			end
 			
 			else if (hc == beat_pos1 || hc == beat_pos2 || hc == beat_pos3 || hc == beat_pos4) begin
-				//red <= 4'b1000;
-				//green <= 4'b1000;
-				//blue <= 4'b1000;
 				color_mode <= BW;
 				color <= GRAY;
 			end
 			
 			else begin
-				//red <= 4'b1111;
-				//green <= 4'b1111;
-				//blue <= 4'b1111;
 				color_mode <= BW;
-				color <= WHITE;
+				color <= BROWN;
 			end
 		
 		end
 		else begin
-			//red <= 4'b0000;
-			//green <= 4'b0000;
-			//blue <= 4'b0000;
 			color_mode <= BW;
 			color <= BLACK;
 		end

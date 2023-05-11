@@ -12,12 +12,13 @@ module color_picker(
 	parameter BLACK = 3'b000;
 	parameter WHITE = 3'b001;
 	parameter GRAY = 3'b010;
+	parameter BROWN = 3'b011;
 	
-	parameter GREEN = 0;
-	parameter RED = 1;
-	parameter YELLOW = 2;
-	parameter BLUE = 3;
-	parameter ORANGE = 4;
+	parameter GREEN = 3'b000;
+	parameter RED = 3'b001;
+	parameter YELLOW = 3'b010;
+	parameter BLUE = 3'b011;
+	parameter ORANGE = 3'b100;
 	
 	always_comb begin
 	
@@ -31,6 +32,11 @@ module color_picker(
 				red <= 4'b1000;
 				green <= 4'b1000;
 				blue <= 4'b1000;
+			end
+			else if (color == BROWN) begin
+				red <= 4'b0100;
+				green <= 4'b0010;
+				blue <= 4'b0001;
 			end
 			else begin
 				red <= 4'b1111;
