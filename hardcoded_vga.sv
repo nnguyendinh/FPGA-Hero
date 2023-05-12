@@ -1,16 +1,16 @@
 module hardcoded_vga(
 		input vgaclk,           //input pixel clock: how fast should this be?
 		input rst,              //synchronous reset
+		input [9:0] switches,
 		output hsync,			//horizontal sync out
 		output vsync,			//vertical sync out
 		output reg [3:0] red,	//red vga output
 		output reg [3:0] green, //green vga output
 		output reg [3:0] blue,	//blue vga output
-		output reg [19:0] score			//output to tell when blanking for RAM purposes
+		output [19:0] score_		//output to tell when blanking for RAM purposes
    );
 	
 	/*
-	
 			Col1 Col2 Col3 Col4
 	
 	Beat1		x					x
@@ -45,6 +45,9 @@ module hardcoded_vga(
 	reg [3:0] beat_notes3 = 4'b1111;
 	reg [3:0] beat_notes4 = 4'b1111;
 	
+	// Track Button Deletions
+	reg [3:0] button_deletions = 4'b0000;
+	
 	// Pixel speed and note length constants
 	localparam PIXELSPEED = 5;
 	localparam NOTELENGTH = 150;
@@ -65,7 +68,8 @@ module hardcoded_vga(
 	reg [9:0] vc;
 	
 	// Score for seven seg display
-	score = 0;
+	reg [19:0] score = 0;
+	assign score_ = score;
 	
 	// Color picker definitions
 	reg color_mode;
@@ -116,7 +120,7 @@ module hardcoded_vga(
 	assign vsync = (vc >= VLINES + VFP && vc < VLINES + VFP + VPULSE) ? 0 : 1;	
 	
 	// Update beat notes and positions during vsync
-	always @(posedge vsync) begin
+	always @(posedge vsync, posedge rst) begin
 	
 		if (rst == 1) begin
 			beat_pos1 <= 0;
@@ -144,6 +148,7 @@ module hardcoded_vga(
 				beat_pos1 <= 0;
 				beat_notes1 <= note_line;
 				ROM_address <= ROM_address + 1'b1;
+				button_deletions[0] <= 0;
 			end
 			
 			// If still within boundary, update beat position
@@ -155,6 +160,7 @@ module hardcoded_vga(
 				beat_pos2 <= 0;
 				beat_notes2 <= note_line;
 				ROM_address <= ROM_address + 1'b1;
+				button_deletions[1] <= 0;
 			end
 			else begin
 				beat_pos2 <= beat_pos2 + PIXELSPEED;
@@ -164,6 +170,7 @@ module hardcoded_vga(
 				beat_pos3 <= 0;
 				beat_notes3 <= note_line;
 				ROM_address <= ROM_address + 1'b1;
+				button_deletions[2] <= 0;
 			end
 			else begin
 				beat_pos3 <= beat_pos3 + PIXELSPEED;
@@ -173,9 +180,23 @@ module hardcoded_vga(
 				beat_pos4 <= 0;
 				beat_notes4 <= note_line;
 				ROM_address <= ROM_address + 1'b1;
+				button_deletions[3] <= 0;
 			end
 			else begin
 				beat_pos4 <= beat_pos4 + PIXELSPEED;
+			end
+			
+			if (beat_pos1 >= 480 && beat_pos1 < 480 + NOTELENGTH && switches[0]) begin
+				button_deletions[0] <= 1;
+			end
+			if (beat_pos2 >= 480 && beat_pos2 < 480 + NOTELENGTH && switches[1]) begin
+				button_deletions[1] <= 1;
+			end
+			if (beat_pos3 >= 480 && beat_pos3 < 480 + NOTELENGTH && switches[2]) begin
+				button_deletions[2] <= 1;
+			end
+			if (beat_pos4 >= 480 && beat_pos4 < 480 + NOTELENGTH && switches[3]) begin
+				button_deletions[3] <= 1;
 			end
 		end
 	end
@@ -194,23 +215,47 @@ module hardcoded_vga(
 			// If on beats 1-4, display appropriate color based on which column note is in
 			else if (hc < beat_pos1 && hc > (beat_pos1 < NOTELENGTH ? 0 : beat_pos1 - NOTELENGTH)
 					&& beat_notes1[vc / 120]) begin
-				color_mode <= COLORED;
-				color <= vc / 120;
+				if (button_deletions[0] == 1) begin
+					color_mode <= BW;
+					color <= WHITE;
+				end
+				else begin
+					color_mode <= COLORED;
+					color <= vc / 120;
+				end
 			end
 			else if (hc < beat_pos2 && hc > (beat_pos2 < NOTELENGTH ? 0 : beat_pos2 - NOTELENGTH)
 						&& beat_notes2[vc / 120]) begin
-				color_mode <= COLORED;
-				color <= vc / 120;
+				if (button_deletions[1] == 1) begin
+					color_mode <= BW;
+					color <= WHITE;
+				end
+				else begin
+					color_mode <= COLORED;
+					color <= vc / 120;
+				end
 			end
 			else if (hc < beat_pos3 && hc > (beat_pos3 < NOTELENGTH ? 0 : beat_pos3 - NOTELENGTH)
 						&& beat_notes3[vc / 120]) begin
-				color_mode <= COLORED;
-				color <= vc / 120;
+				if (button_deletions[2] == 1) begin
+					color_mode <= BW;
+					color <= WHITE;
+				end
+				else begin
+					color_mode <= COLORED;
+					color <= vc / 120;
+				end
 			end
 			else if (hc < beat_pos4 && hc > (beat_pos4 < NOTELENGTH ? 0 : beat_pos4 - NOTELENGTH)
 						&& beat_notes4[vc / 120]) begin
-				color_mode <= COLORED;
-				color <= vc / 120;
+				if (button_deletions[3] == 1) begin
+					color_mode <= BW;
+					color <= WHITE;
+				end
+				else begin
+					color_mode <= COLORED;
+					color <= vc / 120;
+				end
 			end
 			
 			// If directly on a beat line, display gray
